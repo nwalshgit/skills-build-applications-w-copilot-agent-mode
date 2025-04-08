@@ -1,5 +1,13 @@
 from rest_framework import serializers
+from bson import ObjectId
 from .models import User, Team, Activity, Leaderboard, Workout
+
+class ObjectIdField(serializers.Field):
+    def to_representation(self, value):
+        return str(value) if isinstance(value, ObjectId) else value
+
+    def to_internal_value(self, data):
+        return ObjectId(data) if ObjectId.is_valid(data) else data
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,6 +25,8 @@ class ActivitySerializer(serializers.ModelSerializer):
         fields = ['_id', 'user', 'type', 'duration', 'date']
 
 class LeaderboardSerializer(serializers.ModelSerializer):
+    user = UserSerializer()  # Use the UserSerializer to serialize the user field
+
     class Meta:
         model = Leaderboard
         fields = ['_id', 'user', 'score']
